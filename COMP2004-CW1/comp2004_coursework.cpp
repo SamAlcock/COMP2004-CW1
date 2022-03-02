@@ -197,9 +197,15 @@ bool compare_images(){
     for (y=0; y<M; y++)
      if (x>=C0 && x<=N-1-C0 && y>=C0 && y<=M-1-C0) {
       x_compute[x][y][0]=0;
-      for (k=-C0; k<=C0; ++k)
-        x_compute[x][y][C0+k+1] = x_compute[x][y][C0+k]
-           + input[x+k][y]*Filter[abs(k)];
+
+      
+        x_compute[x][y][C0] = x_compute[x][y][C0-1]
+           + input[x-1][y]*Filter[abs(-1)];
+        x_compute[x][y][C0+1] = x_compute[x][y][C0]
+           + input[x][y]*Filter[abs(0)];
+        x_compute[x][y][C0+2] = x_compute[x][y][C0+1]
+           + input[x+1][y]*Filter[abs(1)];   
+        
       x_image[x][y]= x_compute[x][y][(2*C0)+1]/total;
       }
      else
@@ -209,9 +215,15 @@ bool compare_images(){
     for (y=0; y<M; y++)
      if (x>=C0 && x<=N-1-C0 && y>=C0 && y<=M-1-C0) {
       xy_compute[x][y][0]=0;
-      for (k=-C0; k<=C0; ++k)
-        xy_compute[x][y][C0+k+1] = xy_compute[x][y][C0+k] +
-           x_image[x][y+k]*Filter[abs(k)];
+      //C0 = 1
+
+        xy_compute[x][y][C0] = xy_compute[x][y][C0-1] +
+            x_image[x][y-1]*Filter[abs(-1)];
+        xy_compute[x][y][C0+1] = xy_compute[x][y][C0] +
+            x_image[x][y]*Filter[abs(0)];
+        xy_compute[x][y][C0+2] = xy_compute[x][y][C0+1] +
+            x_image[x][y+1]*Filter[abs(1)];
+            
       xy_image[x][y]= xy_compute[x][y][(2*C0)+1]/total;
       }
      else
@@ -223,10 +235,32 @@ bool compare_images(){
     for (y=0; y<M; y++)
      if (x>=C0 && x<=N-1-C0 && y>=C0 && y<=M-1-C0) {
       diff_compute[x][y][0] = 0;
-      for (k=0; k<=C1-1; ++k)
-        diff_compute[x][y][k+1] =
-          maximum(abs(xy_image[x+x_offset[k]][y+y_offset[k]]
-                    - xy_image[x][y]), diff_compute[x][y][k]);
+
+      //C1 = 8
+        diff_compute[x][y][1] =
+          maximum(abs(xy_image[x+x_offset[0]][y+y_offset[0]]
+                    - xy_image[x][y]), diff_compute[x][y][0]);
+        diff_compute[x][y][2] =
+          maximum(abs(xy_image[x+x_offset[1]][y+y_offset[1]]
+                    - xy_image[x][y]), diff_compute[x][y][1]);
+        diff_compute[x][y][3] =
+          maximum(abs(xy_image[x+x_offset[2]][y+y_offset[2]]
+                    - xy_image[x][y]), diff_compute[x][y][2]);
+        diff_compute[x][y][4] =
+          maximum(abs(xy_image[x+x_offset[3]][y+y_offset[3]]
+                    - xy_image[x][y]), diff_compute[x][y][3]);
+        diff_compute[x][y][5] =
+          maximum(abs(xy_image[x+x_offset[4]][y+y_offset[4]]
+                    - xy_image[x][y]), diff_compute[x][y][4]);
+        diff_compute[x][y][6] =
+          maximum(abs(xy_image[x+x_offset[5]][y+y_offset[5]]
+                    - xy_image[x][y]), diff_compute[x][y][5]);
+        diff_compute[x][y][7] =
+          maximum(abs(xy_image[x+x_offset[6]][y+y_offset[6]]
+                    - xy_image[x][y]), diff_compute[x][y][6]);
+        diff_compute[x][y][8] =
+          maximum(abs(xy_image[x+x_offset[7]][y+y_offset[7]]
+                    - xy_image[x][y]), diff_compute[x][y][7]);             
       edge_image[x][y] = diff_compute[x][y][C1];
       }
      else
