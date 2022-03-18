@@ -20,6 +20,7 @@ First, read the code and understand what it does. Then, try to simplify the code
 //Methods used: Loop unrolling, scalar replacement, strength reduction
 
 #include "mbed.h"
+#include <cstdio>
 
 
 using namespace std::chrono;
@@ -115,54 +116,99 @@ void inefficient_routine()
     const unsigned short int total = 235;
 
     /*  Part A */
-    for (x = 0; x < N; x++)
-        for (y = 0; y < M; y++)
-            if (y >= C0 && y <= M - 1 - C0 && x >= C0 && x <= N - 1 - C0) {
+    for (x = 0; x < 80; x++)
+        for (y = 0; y < 80; y++)
+            if (y >= 1 && y <= 78 && x >= 1 && x <= 78) {
                 x_compute[x][y][0] = 0;
 
-                x_compute[x][y][C0] = x_compute[x][y][C0 - 1] + input[x - 1][y] * Filter[1];
-                x_compute[x][y][1 + C0] = x_compute[x][y][C0] + input[x][y] * Filter[0];
-                x_compute[x][y][2 + C0] = x_compute[x][y][C0 + 1] + input[x + 1][y] * Filter[1];
+                x_compute[x][y][1] = x_compute[x][y][0] + input[x - 1][y] * 68;
+                x_compute[x][y][2] = x_compute[x][y][1] + input[x][y] * 99;
+                x_compute[x][y][3] = x_compute[x][y][2] + input[x + 1][y] * 68;
 
-                x_image[x][y] = x_compute[x][y][(2 * C0) + 1] / total;
+                x_image[x][y] = x_compute[x][y][3] / total;
             }
             else //this is for image border pixels only
                 x_image[x][y] = 0;
 
-    for (x = 0; x < N; x++)
-        for (y = 0; y < M; y++)
-            if (y >= C0 && y <= M - 1 - C0 && x >= C0 && x <= N - 1 - C0) {
+    for (x = 0; x < 80; x++)
+        for (y = 0; y < 80; y++)
+            if (y >= 1 && y <= 78 && x >= 1 && x <= 78) {
                 xy_compute[x][y][0] = 0;
                 
-                xy_compute[x][y][C0] = xy_compute[x][y][C0 - 1] + x_image[x][y - 1] * Filter[1];
-                xy_compute[x][y][C0 + 1] = xy_compute[x][y][C0] + x_image[x][y] * Filter[0];
-                xy_compute[x][y][C0 + 2] = xy_compute[x][y][C0 + 1] + x_image[x][y + 1] * Filter[1];
+                xy_compute[x][y][1] = xy_compute[x][y][0] + x_image[x][y - 1] * 68;
+                xy_compute[x][y][2] = xy_compute[x][y][1] + x_image[x][y] * 99;
+                xy_compute[x][y][3] = xy_compute[x][y][2] + x_image[x][y + 1] * 68;
 
-                xy_image[x][y] = xy_compute[x][y][(2 * C0) + 1] / total;
+                xy_image[x][y] = xy_compute[x][y][3] / total;
             }
             else
                 xy_image[x][y] = 0;
 
     /*  Part B */
-    for (x = 0; x < N; x++)
-        for (y = 0; y < M; y++)
-            if (x >= C0 && x <= N - 1 - C0 && y >= C0 && y <= M - 1 - C0) {
-                char image = xy_image[x][y];
-                diff_compute[x][y][0] = 0;
-                diff_compute[x][y][1] = maximum(abs(xy_image[x + x_offset[0]][y + y_offset[0]] - image), diff_compute[x][y][0]);
-                diff_compute[x][y][2] = maximum(abs(xy_image[x + x_offset[1]][y + y_offset[1]] - image), diff_compute[x][y][1]);
-                diff_compute[x][y][3] = maximum(abs(xy_image[x + x_offset[2]][y + y_offset[2]] - image), diff_compute[x][y][2]);
-                diff_compute[x][y][4] = maximum(abs(xy_image[x + x_offset[3]][y + y_offset[3]] - image), diff_compute[x][y][3]);
-                diff_compute[x][y][5] = maximum(abs(xy_image[x + x_offset[4]][y + y_offset[4]] - image), diff_compute[x][y][4]);
-                diff_compute[x][y][6] = maximum(abs(xy_image[x + x_offset[5]][y + y_offset[5]] - image), diff_compute[x][y][5]);
-                diff_compute[x][y][7] = maximum(abs(xy_image[x + x_offset[6]][y + y_offset[6]] - image), diff_compute[x][y][6]);
-                diff_compute[x][y][8] = maximum(abs(xy_image[x + x_offset[7]][y + y_offset[7]] - image), diff_compute[x][y][7]);
+    unsigned char image;
+    unsigned char edge;
+    for (x = 0; x < 80; x++)
+        for (y = 0; y < 80; y+=4)
+            if (x != 0 || y != 0 || x != 79 || y != 79){
+                image = xy_image[x][y];
+                edge = edge_image[x][y];
+                
+                edge = 0;
+                edge = maximum(abs(xy_image[x + 1][y + 1] - image), edge);
+                edge = maximum(abs(xy_image[x + 1][y] - image), edge);
+                edge = maximum(abs(xy_image[x + 1][y - 1] - image), edge);
+                edge = maximum(abs(xy_image[x][y + 1] - image), edge);
+                edge = maximum(abs(xy_image[x][y - 1] - image), edge);
+                edge = maximum(abs(xy_image[x - 1][y + 1] - image), edge);
+                edge = maximum(abs(xy_image[x - 1][y] - image), edge);
+                edge_image[x][y] = maximum(abs(xy_image[x - 1][y - 1] - image), edge);
 
-                edge_image[x][y] = diff_compute[x][y][C1];
+                image = xy_image[x][y + 1];
+                edge = edge_image[x][y + 1];
+                
+                edge = 0;
+                edge = maximum(abs(xy_image[x + 1][y + 2] - image), edge);
+                edge = maximum(abs(xy_image[x + 1][y + 1] - image), edge);
+                edge = maximum(abs(xy_image[x + 1][y] - image), edge);
+                edge = maximum(abs(xy_image[x][y + 2] - image), edge);
+                edge = maximum(abs(xy_image[x][y] - image), edge);
+                edge = maximum(abs(xy_image[x - 1][y + 2] - image), edge);
+                edge = maximum(abs(xy_image[x - 1][y + 1] - image), edge);
+                edge_image[x][y + 1] = maximum(abs(xy_image[x - 1][y] - image), edge);
+                
+                image = xy_image[x][y + 2];
+                edge = edge_image[x][y + 2];
+                
+                edge = 0;
+                edge = maximum(abs(xy_image[x + 1][y + 3] - image), edge);
+                edge = maximum(abs(xy_image[x + 1][y + 2] - image), edge);
+                edge = maximum(abs(xy_image[x + 1][y + 1] - image), edge);
+                edge = maximum(abs(xy_image[x][y + 3] - image), edge);
+                edge = maximum(abs(xy_image[x][y + 1] - image), edge);
+                edge = maximum(abs(xy_image[x - 1][y + 3] - image), edge);
+                edge = maximum(abs(xy_image[x - 1][y + 2] - image), edge);
+                edge_image[x][y + 2] = maximum(abs(xy_image[x - 1][y + 1] - image), edge);
+                
+                image = xy_image[x][y + 3];
+                edge = edge_image[x][y + 3];
+                
+                edge = 0;
+                edge = maximum(abs(xy_image[x + 1][y + 4] - image), edge);
+                edge = maximum(abs(xy_image[x + 1][y + 3] - image), edge);
+                edge = maximum(abs(xy_image[x + 1][y + 2] - image), edge);
+                edge = maximum(abs(xy_image[x][y + 4] - image), edge);
+                edge = maximum(abs(xy_image[x][y + 2] - image), edge);
+                edge = maximum(abs(xy_image[x - 1][y + 4] - image), edge);
+                edge = maximum(abs(xy_image[x - 1][y + 3] - image), edge);
+                edge_image[x][y + 3] = maximum(abs(xy_image[x - 1][y + 2] - image), edge);
+
+
+
             }
-            else
-                edge_image[x][y] = 0;
-
+            
+            
+            
+            
     /* Part C */
     for (x = 0; x < N; x++)
         for (y = 0; y < M; y++)
@@ -183,8 +229,7 @@ void inefficient_routine()
 //returns false/true, when the output image is incorrect/correct, respectively
 bool compare_images(){
 	
-
-  unsigned char out_compute;
+    unsigned char out_compute;
   int x,y,k;
   unsigned short total=0;
 
@@ -192,24 +237,15 @@ bool compare_images(){
 /* start layer 2 code */
 
   /*  GaussBlur(in_image, g_image); */
+  for (k=-C0; k<=C0; ++k)  total += Filter[abs(k)];
 
-  total += Filter[1];
-  total += Filter[0];
-  total += Filter[1];
-  
   for (x=0; x<N; x++)
     for (y=0; y<M; y++)
      if (x>=C0 && x<=N-1-C0 && y>=C0 && y<=M-1-C0) {
       x_compute[x][y][0]=0;
-
-      
-        x_compute[x][y][C0] = x_compute[x][y][C0-1]
-           + input[x-1][y]*Filter[1];
-        x_compute[x][y][C0+1] = x_compute[x][y][C0]
-           + input[x][y]*Filter[0];
-        x_compute[x][y][C0+2] = x_compute[x][y][C0+1]
-           + input[x+1][y]*Filter[1];   
-        
+      for (k=-C0; k<=C0; ++k)
+        x_compute[x][y][C0+k+1] = x_compute[x][y][C0+k]
+           + input[x+k][y]*Filter[abs(k)];
       x_image[x][y]= x_compute[x][y][(2*C0)+1]/total;
       }
      else
@@ -219,14 +255,9 @@ bool compare_images(){
     for (y=0; y<M; y++)
      if (x>=C0 && x<=N-1-C0 && y>=C0 && y<=M-1-C0) {
       xy_compute[x][y][0]=0;
-
-        xy_compute[x][y][C0] = xy_compute[x][y][C0-1] +
-            x_image[x][y-1]*Filter[1];
-        xy_compute[x][y][C0+1] = xy_compute[x][y][C0] +
-            x_image[x][y]*Filter[0];
-        xy_compute[x][y][C0+2] = xy_compute[x][y][C0+1] +
-            x_image[x][y+1]*Filter[1];
-            
+      for (k=-C0; k<=C0; ++k)
+        xy_compute[x][y][C0+k+1] = xy_compute[x][y][C0+k] +
+           x_image[x][y+k]*Filter[abs(k)];
       xy_image[x][y]= xy_compute[x][y][(2*C0)+1]/total;
       }
      else
@@ -238,32 +269,10 @@ bool compare_images(){
     for (y=0; y<M; y++)
      if (x>=C0 && x<=N-1-C0 && y>=C0 && y<=M-1-C0) {
       diff_compute[x][y][0] = 0;
-      char image = xy_image[x][y];
-
-        diff_compute[x][y][1] =
-          maximum(abs(xy_image[x+x_offset[0]][y+y_offset[0]]
-                    - image), diff_compute[x][y][0]);
-        diff_compute[x][y][2] =
-          maximum(abs(xy_image[x+x_offset[1]][y+y_offset[1]]
-                    - image), diff_compute[x][y][1]);
-        diff_compute[x][y][3] =
-          maximum(abs(xy_image[x+x_offset[2]][y+y_offset[2]]
-                    - image), diff_compute[x][y][2]);
-        diff_compute[x][y][4] =
-          maximum(abs(xy_image[x+x_offset[3]][y+y_offset[3]]
-                    - image), diff_compute[x][y][3]);
-        diff_compute[x][y][5] =
-          maximum(abs(xy_image[x+x_offset[4]][y+y_offset[4]]
-                    - image), diff_compute[x][y][4]);
-        diff_compute[x][y][6] =
-          maximum(abs(xy_image[x+x_offset[5]][y+y_offset[5]]
-                    - image), diff_compute[x][y][5]);
-        diff_compute[x][y][7] =
-          maximum(abs(xy_image[x+x_offset[6]][y+y_offset[6]]
-                    - image), diff_compute[x][y][6]);
-        diff_compute[x][y][8] =
-          maximum(abs(xy_image[x+x_offset[7]][y+y_offset[7]]
-                    - image), diff_compute[x][y][7]);             
+      for (k=0; k<=C1-1; ++k)
+        diff_compute[x][y][k+1] =
+          maximum(abs(xy_image[x+x_offset[k]][y+y_offset[k]]
+                    - xy_image[x][y]), diff_compute[x][y][k]);
       edge_image[x][y] = diff_compute[x][y][C1];
       }
      else
@@ -273,32 +282,21 @@ bool compare_images(){
   for (x=0; x<N; x++)
     for (y=0; y<M; y++)
      if (x>=C0 && x<=N-1-C0 && y>=C0 && y<=M-1-C0) {
-        out_compute = 255;
-        char edge_img = edge_image[x][y]; 
-          if (edge_image[x+x_offset[0]][y+y_offset[0]] <
-              edge_img) out_compute = 0;
-          if (edge_image[x+x_offset[1]][y+y_offset[1]] <
-              edge_img) out_compute = 0;
-          if (edge_image[x+x_offset[2]][y+y_offset[2]] <
-              edge_img) out_compute = 0;
-          if (edge_image[x+x_offset[3]][y+y_offset[3]] <
-              edge_img) out_compute = 0;
-          if (edge_image[x+x_offset[4]][y+y_offset[4]] <
-              edge_img) out_compute = 0;
-          if (edge_image[x+x_offset[5]][y+y_offset[5]] <
-              edge_img) out_compute = 0;
-          if (edge_image[x+x_offset[6]][y+y_offset[6]] <
-              edge_img) out_compute = 0;
-          if (edge_image[x+x_offset[7]][y+y_offset[7]] <
-              edge_img) out_compute = 0;
+        out_compute = 255; 
+        k = 0;
+        while ((out_compute == 255) && (k <= C1-1)) {
+          if (edge_image[x+x_offset[k]][y+y_offset[k]] <
+              edge_image[x][y]) out_compute = 0;
+          ++k; }
         if (output[x][y] != out_compute)
 					return false;
         }
-      else
+     else
           if (output[x][y] != 0)
 					  return false;
 		
 					
 					return true;
+
 	}
 	
