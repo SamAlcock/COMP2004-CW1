@@ -17,7 +17,7 @@ First, read the code and understand what it does. Then, try to simplify the code
 //Initial time Debug- 21ms
 //Initial time Release - 19ms
 
-//Methods used: Loop unrolling, scalar replacement, strength reduction
+//Methods used: Loop unrolling, scalar replacement, strength reduction, register blocking
 
 #include "mbed.h"
 #include <cstdio>
@@ -116,30 +116,33 @@ void inefficient_routine()
     const unsigned short int total = 235;
 
     /*  Part A */
+    unsigned short compute_x;
     for (x = 0; x < 80; x++)
         for (y = 0; y < 80; y++)
             if (y >= 1 && y <= 78 && x >= 1 && x <= 78) {
-                x_compute[x][y][0] = 0;
+                // image_x = x_image[x][y];
+                compute_x = 0;
 
-                x_compute[x][y][1] = x_compute[x][y][0] + input[x - 1][y] * 68;
-                x_compute[x][y][2] = x_compute[x][y][1] + input[x][y] * 99;
-                x_compute[x][y][3] = x_compute[x][y][2] + input[x + 1][y] * 68;
+                compute_x = compute_x + input[x - 1][y] * 68;
+                compute_x = compute_x + input[x][y] * 99;
+                compute_x = compute_x + input[x + 1][y] * 68;
 
-                x_image[x][y] = x_compute[x][y][3] / total;
+                x_image[x][y] = compute_x / total;
             }
             else //this is for image border pixels only
                 x_image[x][y] = 0;
 
+    unsigned short compute_xy;
     for (x = 0; x < 80; x++)
         for (y = 0; y < 80; y++)
             if (y >= 1 && y <= 78 && x >= 1 && x <= 78) {
-                xy_compute[x][y][0] = 0;
+                compute_xy = 0;
                 
-                xy_compute[x][y][1] = xy_compute[x][y][0] + x_image[x][y - 1] * 68;
-                xy_compute[x][y][2] = xy_compute[x][y][1] + x_image[x][y] * 99;
-                xy_compute[x][y][3] = xy_compute[x][y][2] + x_image[x][y + 1] * 68;
+                compute_xy = compute_xy + x_image[x][y - 1] * 68;
+                compute_xy = compute_xy + x_image[x][y] * 99;
+                compute_xy = compute_xy + x_image[x][y + 1] * 68;
 
-                xy_image[x][y] = xy_compute[x][y][3] / total;
+                xy_image[x][y] = compute_xy / total;
             }
             else
                 xy_image[x][y] = 0;
