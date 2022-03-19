@@ -116,33 +116,22 @@ void inefficient_routine()
     const unsigned short int total = 235;
 
     /*  Part A */
-    unsigned short compute_x;
     for (x = 0; x < 80; x++)
         for (y = 0; y < 80; y++)
             if (y >= 1 && y <= 78 && x >= 1 && x <= 78) {
-                // image_x = x_image[x][y];
-                compute_x = 0;
 
-                compute_x = compute_x + input[x - 1][y] * 68;
-                compute_x = compute_x + input[x][y] * 99;
-                compute_x = compute_x + input[x + 1][y] * 68;
+                x_image[x][y] = ((input[x - 1][y] + input[x + 1][y])* 68 + input[x][y] * 99) / total;
 
-                x_image[x][y] = compute_x / total;
             }
             else //this is for image border pixels only
                 x_image[x][y] = 0;
 
-    unsigned short compute_xy;
+    
     for (x = 0; x < 80; x++)
         for (y = 0; y < 80; y++)
             if (y >= 1 && y <= 78 && x >= 1 && x <= 78) {
-                compute_xy = 0;
                 
-                compute_xy = compute_xy + x_image[x][y - 1] * 68;
-                compute_xy = compute_xy + x_image[x][y] * 99;
-                compute_xy = compute_xy + x_image[x][y + 1] * 68;
-
-                xy_image[x][y] = compute_xy / total;
+                xy_image[x][y] = ((x_image[x][y - 1] + x_image[x][y + 1])* 68 + x_image[x][y] * 99) / total;
             }
             else
                 xy_image[x][y] = 0;
@@ -226,6 +215,14 @@ void inefficient_routine()
             }
             else
                 output[x][y] = 0;
+
+    for (int i = 0; i < 79; i++){
+        output[0][i] = 0;
+        output[i][0] = 0;
+        output[79][i] = 0;
+        output[i][79] = 0;
+    }
+        
 }
 
 
