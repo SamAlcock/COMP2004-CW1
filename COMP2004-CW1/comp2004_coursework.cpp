@@ -116,19 +116,18 @@ void inefficient_routine()
     const unsigned short int total = 235;
 
     /*  Part A */
-    for (x = 0; x < 80; x++)
-        for (y = 0; y < 80; y++)
+    for (x = 1; x < 79; x++)
+        for (y = 1; y < 79; y++)
             if (y >= 1 && y <= 78 && x >= 1 && x <= 78) {
 
                 x_image[x][y] = ((input[x - 1][y] + input[x + 1][y])* 68 + input[x][y] * 99) / total;
-
             }
             else //this is for image border pixels only
                 x_image[x][y] = 0;
 
     
-    for (x = 0; x < 80; x++)
-        for (y = 0; y < 80; y++)
+    for (x = 1; x < 79; x++)
+        for (y = 1; y < 79; y++)
             if (y >= 1 && y <= 78 && x >= 1 && x <= 78) {
                 
                 xy_image[x][y] = ((x_image[x][y - 1] + x_image[x][y + 1])* 68 + x_image[x][y] * 99) / total;
@@ -139,8 +138,8 @@ void inefficient_routine()
     /*  Part B */
     unsigned char image;
     unsigned char edge;
-    for (x = 0; x < 80; x++)
-        for (y = 0; y < 80; y+=4)
+    for (x = 1; x < 79; x++)
+        for (y = 1; y < 79; y+=4)
             if (x != 0 || y != 0 || x != 79 || y != 79){
                 image = xy_image[x][y];
                 edge = edge_image[x][y];
@@ -194,16 +193,11 @@ void inefficient_routine()
                 edge = maximum(abs(xy_image[x - 1][y + 3] - image), edge);
                 edge_image[x][y + 3] = maximum(abs(xy_image[x - 1][y + 2] - image), edge);
 
-
-
             }
-            
-            
-            
-            
+   
     /* Part C */
-    for (x = 0; x < N; x++)
-        for (y = 0; y < M; y++)
+    for (x = 1; x < 79; x++)
+        for (y = 1; y < 79; y++)
             if (x >= C0 && x <= N - 1 - C0 && y >= C0 && y <= M - 1 - C0) {
                 out_compute = 255;
                 k = 0;
@@ -216,7 +210,7 @@ void inefficient_routine()
             else
                 output[x][y] = 0;
 
-    for (int i = 0; i < 79; i++){
+    for (int i = 0; i < 80; i++){
         output[0][i] = 0;
         output[i][0] = 0;
         output[79][i] = 0;
