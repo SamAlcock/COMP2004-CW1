@@ -14,10 +14,19 @@ First, read the code and understand what it does. Then, try to simplify the code
 
 */
 
-//Initial time Debug- 21ms
+//Initial time Debug - 21ms
 //Initial time Release - 19ms
 
-//Methods used: Loop unrolling, scalar replacement, strength reduction, register blocking
+//Final time Debug - 6ms
+//Final time Release - 4ms
+
+/*
+Methods used: Loop unrolling (parts a, b and c), scalar replacement (parts a and b), strength reduction (part a), 
+register blocking (part b), loop merge (part c), removed redundant if conditions and arrays (parts a and b)
+
+Debug speed up value - 3.5
+Release speed up value - 4.75
+*/
 
 #include "mbed.h"
 #include <cstdio>
@@ -116,24 +125,14 @@ void inefficient_routine()
     const unsigned short int total = 235;
 
     /*  Part A */
-    for (x = 1; x < 79; x++)
-        for (y = 1; y < 79; y++)
-            if (y >= 1 && y <= 78 && x >= 1 && x <= 78) {
-
-                x_image[x][y] = ((input[x - 1][y] + input[x + 1][y])* 68 + input[x][y] * 99) / total;
-            }
-            else //this is for image border pixels only
-                x_image[x][y] = 0;
-
-    
-    for (x = 1; x < 79; x++)
-        for (y = 1; y < 79; y++)
-            if (y >= 1 && y <= 78 && x >= 1 && x <= 78) {
-                
-                xy_image[x][y] = ((x_image[x][y - 1] + x_image[x][y + 1])* 68 + x_image[x][y] * 99) / total;
-            }
-            else
-                xy_image[x][y] = 0;
+    for (x = 1; x < 79; x++){
+        for (y = 1; y <= 78; y++){
+             x_image[x][y] = ((input[x - 1][y] + input[x + 1][y])* 68 + input[x][y] * 99) / total;
+        }
+        for (y = 1; y <= 78; y++){
+            xy_image[x][y] = ((x_image[x][y - 1] + x_image[x][y + 1])* 68 + x_image[x][y] * 99) / total;
+        }           
+    }
 
     /*  Part B */
     unsigned char image;
@@ -200,8 +199,6 @@ void inefficient_routine()
         for (y = 1; y < 79; y++)
             if (x >= C0 && x <= N - 1 - C0 && y >= C0 && y <= M - 1 - C0) {
                 out_compute = 255;
-                k = 0;
-                //C1 = 8
                 if (edge_image[x + x_offset[0]][y + y_offset[0]] < edge_image[x][y] || edge_image[x + x_offset[1]][y + y_offset[1]] < edge_image[x][y] || edge_image[x + x_offset[2]][y + y_offset[2]] < edge_image[x][y] || edge_image[x + x_offset[3]][y + y_offset[3]] < edge_image[x][y] || edge_image[x + x_offset[4]][y + y_offset[4]] < edge_image[x][y] || edge_image[x + x_offset[5]][y + y_offset[5]] < edge_image[x][y] || edge_image[x + x_offset[6]][y + y_offset[6]] < edge_image[x][y] || edge_image[x + x_offset[7]][y + y_offset[7]] < edge_image[x][y])  
                     out_compute = 0;
 
