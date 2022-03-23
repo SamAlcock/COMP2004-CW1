@@ -14,18 +14,27 @@ First, read the code and understand what it does. Then, try to simplify the code
 
 */
 
-//Initial time Debug - 21ms
-//Initial time Release - 19ms
+//Initial time Debug Board - 21ms
+//Initial time Release Board - 19ms
 
-//Final time Debug - 6ms
-//Final time Release - 4ms
+//Final time Debug Board - 6ms
+//Final time Release Board - 4ms
+
+//Initial time Debug PC - 1.487 seconds (3dp) - looped 1000 times
+//Initial time Release PC - 0.256 seconds (3dp) - looped 1000 times
+
+//Final time Debug PC - 1.328 seconds (3dp) - looped 1000 times
+//Final time Release PC - 0.086 seconds (3dp) - looped 1000 times
 
 /*
 Methods used: Loop unrolling (parts a, b and c), scalar replacement (parts a and b), strength reduction (part a), 
 register blocking (part b), loop merge (part c), removed redundant if conditions and arrays (parts a and b)
 
-Debug speed up value - 3.5
-Release speed up value - 4.75
+Debug speed up value Board - 3.5
+Release speed up value Board - 4.75
+
+Debug speed up value PC - 1.119 (3dp)
+Release speed up value PC - 2.977 (3dp) 
 */
 
 #include "mbed.h"
